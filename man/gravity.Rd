@@ -24,19 +24,21 @@ gravity(y, x, d, group, data, ln = TRUE, constrained = TRUE, ...)
 \item{...}{Additional argument passed to nlme or lm}
 }
 \value{
-formula         Model formula
+formula           Model formula
 
-gravity         Gravity model
+gravity           Gravity model
 
-AIC             AIC value for selected model
+AIC               AIC value for selected model
 
-x               data.frame of independent variables
+log.likelihood    Restricted log-likelihood at convergence
 
-y               Vector of dependent variable
+x                 data.frame of independent variables
 
-groups          Ordered factor vector of grouping variable
+y                 Vector of dependent variable
 
-fit             Model Fitted Values
+groups            Ordered factor vector of grouping variable
+
+fit               Model Fitted Values
 }
 \description{
 Implements Murphy et al., (2010) gravity model
@@ -44,14 +46,17 @@ Implements Murphy et al., (2010) gravity model
 \note{
 The "group" factor defines the singly constrained direction (from or to) and the grouping structure for the origins.
 
+To specify a null (distance only or IBD) model just omit the x argument.
+
 Depends: nlme, lattice
 }
 \examples{
 library(nlme)
 data(ralu.model)
+str(ralu.model)
 
-# Gravity	
-x = c("DISTANCE", "DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
+# Gravity model	
+x = c("DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
 ( gm <- gravity(y = "DPS", x = x, d = "DISTANCE", group = "FROM_SITE", 
                 data = ralu.model, ln = FALSE) )
 
@@ -59,13 +64,26 @@ x = c("DISTANCE", "DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
  par(mfrow=c(2,3))
    for (i in 1:6) { plot(gm, type=i) } 
 
+# log likelihood of competing models 
+ x = c("DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
+ for(i in x[-1]) {
+   x1 = c(x[1], x[-which(x \%in\% i)])  
+   ll <- gravity(y = "DPS", x = x1, d = "DISTANCE", group = "FROM_SITE", 
+                data = ralu.model, ln = FALSE)$log.likelihood
+  cat("log likelihood for parameter set:", "(",x1,")", "=", ll, "\\n")				 
+ }
+
+
+# Distance only (IBD) model
+gravity(y = "DPS", d = "DISTANCE", group = "FROM_SITE", 
+        data = ralu.model, ln = FALSE)
+
+}
+\references{
+Murphy, M. A. & J.S. Evans. (in prep). GenNetIt: graph theoretical gravity modeling for landscape genetics
+
+Murphy M.A., R. Dezzani, D.S. Pilliod & A.S. Storfer (2010) Landscape genetics of high mountain frog metapopulations. Molecular Ecology 19(17):3634-3649
 }
 \author{
 Jeffrey S. Evans  <jeffrey_evans@tnc.org> and Melanie Murphy <melanie.murphy@uwyo.edu>
 }
-\references{
-Murphy, M. A. & J.S. Evans. (in prep). "GenNetIt: gravity analysis in R for landscape genetics"
-
-Murphy M.A., R. Dezzani, D.S. Pilliod & A.S. Storfer (2010) Landscape genetics of high mountain frog metapopulations. Molecular Ecology 19(17):3634-3649
-}
-

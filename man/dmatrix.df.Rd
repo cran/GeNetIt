@@ -38,4 +38,3 @@ Function results in data.frame object with "X1" (FROM), "X2" (TO) and "distance"
 \author{
 Jeffrey S. Evans  <jeffrey_evans@tnc.org> and Melanie Murphy <melanie.murphy@uwyo.edu>
 }
-

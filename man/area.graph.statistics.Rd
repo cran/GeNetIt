@@ -48,4 +48,3 @@ area.graph.statistics(dist.graph[1:5,], r = xvars, s = 500,
 }
 
 }
-

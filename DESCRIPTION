@@ -1,8 +1,8 @@
 Package: GeNetIt
 Type: Package
 Title: Spatial Graph-Theoretic Genetic Gravity Modelling
-Version: 0.1-0
-Date: 2016-03-09
+Version: 0.1-1
+Date: 2017-07-31
 Authors@R: c(person(family="Evans", given="Jeffrey S.", email = "jeffrey_evans@tnc.org", 
              role = c("aut", "cre")), person(family="Murphy", given="Melanie", role = "aut") )
 Description: Implementation of spatial graph-theoretic genetic gravity models.
@@ -17,8 +17,8 @@ License: GPL-3
 NeedsCompilation: no
 Repository: CRAN
 LazyData: true
-RoxygenNote: 5.0.1
-Packaged: 2016-03-09 23:01:54 UTC; jevans
+RoxygenNote: 6.0.1
+Packaged: 2017-07-31 21:15:30 UTC; jeffrey_evans
 Author: Jeffrey S. Evans [aut, cre],
   Melanie Murphy [aut]
-Date/Publication: 2016-03-10 00:27:49
+Date/Publication: 2017-07-31 21:29:14 UTC

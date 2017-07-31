@@ -19,4 +19,3 @@ Model predictions
 \description{
 predict method for class "gravity"
 }
-

@@ -15,6 +15,5 @@
 Summary method for class "gravity".
 }
 \note{
-Summary of lme or lm gravity model, AIC and Root Mean Square Error (RMSE) of observed verses predicted
+Summary of lme or lm gravity model, AIC, log likelihood and Root Mean Square Error (RMSE) of observed verses predicted
 }
-

@@ -14,4 +14,3 @@
 \description{
 summary method for class "gravity"
 }
-

@@ -54,4 +54,3 @@ dist.graph@data <- data.frame(dist.graph@data, stats)
 }
 
 }
-
