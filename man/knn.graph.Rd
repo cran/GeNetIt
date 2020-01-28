@@ -4,15 +4,22 @@
 \alias{knn.graph}
 \title{Saturated or K Nearest Neighbor Graph}
 \usage{
-knn.graph(x, row.names = NULL, k = NULL, max.dist = NULL,
-  sym = FALSE, long.lat = FALSE, drop.lower = FALSE)
+knn.graph(
+  x,
+  row.names = NULL,
+  k = NULL,
+  max.dist = NULL,
+  sym = FALSE,
+  long.lat = FALSE,
+  drop.lower = FALSE
+)
 }
 \arguments{
 \item{x}{sp SpatialPointsDataFrame object}
 
 \item{row.names}{Unique row.names assigned to results}
 
-\item{k}{K nearest neighbors}
+\item{k}{K nearest neighbors, defaults to saturated [n(x) - 1]}
 
 \item{max.dist}{Maximum length of an edge (used for distance constraint)}
 
