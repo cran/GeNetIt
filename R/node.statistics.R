@@ -1,18 +1,21 @@
 #' @title raster statistics for nodes
-#' @description returns raster value or statistics (based on specified radius) for node 
+#' @description returns raster value or statistics 
+#'             (based on specified radius) for node 
 #'
 #' @param x        sp class SpatialPointsDataFrame object 
 #' @param r        A rasterLayer, rasterStack or rasterBrick object
 #' @param buffer   Buffer distance, radius in projection units
-#' @param stats    Statistics to calculate. If vectorized, can pass a custom statistic function. 
+#' @param stats    Statistics to calculate. If vectorized, can pass a 
+#'                 custom statistic function. 
 #'
 #'	
 #' @return data.frame object of at-node raster values or statistics 
 #'
-#' @note If no buffer is specified, at-node raster values are returned 
+#' @note 
+#' If no buffer is specified, at-node raster values are returned 
 #'  
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(sp)
 #' library(spdep)
 #' library(raster)
@@ -38,32 +41,39 @@
 #'              stats = c("min", "median", "max", "var", "skew")) 
 #' } ) 
 #'
-#'
 #' dist.graph@@data <- data.frame(dist.graph@@data, stats, nstats)
 #'   str(dist.graph@@data)
 #' }
 #' 
-#' @import velox
-#' @export graph.statistics
+#' @export node.statistics
 node.statistics <- function(x, r, buffer = NULL, 
-              stats = c("min", "median", "max") ) {
-  if(!inherits(x, "SpatialPointsDataFrame")) 
-    stop("x is not a SpatialPointsDataFrame object")
-  if (!inherits(r, "RasterLayer") &  !inherits(r, "RasterStack") &
-	  !inherits(r, "RasterBrick") ) 
-	    stop("r is not a raster object")
-    rvx <- velox::velox(r)
+                            stats = c("min", "median", "max") ) {				
+  if (!any(class(r)[1] == c("RasterLayer", "RasterStack", "RasterBrick"))) 
+      stop("r must be a raster (layer, stack, brick) class object")
+  if (!any(class(x)[1] == c("SpatialPointsDataFrame", "sf"))) 
+      stop("x must be a SpatialPointsDataFrame or sf POINT object")
+  if(class(x)[1] == "sf"){
+    if(attributes(x$geometry)$class[1] != "POINT")
+      stop("x must be a sf sfc_LINE object")
+  }	
+  if(!sp::is.projected(methods::as(x,"Spatial")))
+    warning("Projection is not defined or in lat/long, is it recommended that you 
+      project your data to prevent planiar distortions")
+  if(inherits(x, "SpatialPointsDataFrame")) {
+    x <- sf::st_as_sf(x)
+  } 	  
   if(is.null(buffer)) {
-    message("Only at-node values being returned")
-    results <- as.data.frame(rvx$extract_points(sp = x))
-	  names(results) <- names(r) 
+    message("At-node ([x,y] point) values being returned")
+      results <- data.frame(raster::extract(r, x))
+	    names(results) <- names(r) 
   } else if(!is.null(buffer)) {
   if(!is.numeric(buffer)) stop("Buffer radius needs to be numeric")  
-  message(paste0("Using ", buffer, " distance for statistics"))
-    x <- rgeos::gBuffer(x, byid = TRUE, id = row.names(x), 
-                        width = buffer, quadseg = 100)
-    ldf <- rvx$extract(sp = x)
-	  names(ldf) <- row.names(x)
+    message(paste0("Using ", buffer, " distance for statistics"))
+	x <- sf::st_buffer(x, dist = buffer) 
+      ldf <- exactextractr::exact_extract(r, x, progress = FALSE)
+        ldf <- lapply(ldf, FUN = function(x) as.data.frame(x[,-which(names(x) %in% "coverage_fraction")]))	
+	      names(ldf) <- row.names(x)
+		  
     stats.fun <- function(x, m = stats) {
 	  slist <- list()
         for(i in 1:length(m)) {
@@ -71,9 +81,9 @@ node.statistics <- function(x, r, buffer = NULL,
 	    }
 	  return( as.data.frame(t(unlist(slist))) )
     }
-        results <- lapply(ldf, FUN=stats.fun)
+    results <- lapply(ldf, FUN=stats.fun)
 	  results <- do.call("rbind", results)
-	rn <- vector()
+	    rn <- vector()
 	  for(n in stats) { rn <- append(rn, paste(n, names(r), sep="."))}
 	    names(results) <- rn 
   }
