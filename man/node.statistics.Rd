@@ -28,33 +28,31 @@ If no buffer is specified, at-node raster values are returned
 }
 \examples{
 \donttest{
-library(sp)
-library(spdep)
-library(raster)
-  data(rasters)
-  data(ralu.site)
+ library(sf)
+ library(terra)  
 
-xvars <- stack(rasters)
-  
-skew <- function(x, na.rm = TRUE) {  
-          if (na.rm) x <- x[!is.na(x)]
-          sum( (x - mean(x)) ^ 3) / ( length(x) * sd(x) ^ 3 )  
-		}
+ data(ralu.site)
+ xvars <- rast(system.file("extdata/covariates.tif", package="GeNetIt"))
+   
+ skew <- function(x, na.rm = TRUE) {  
+           if (na.rm) x <- x[!is.na(x)]
+           sum( (x - mean(x)) ^ 3) / ( length(x) * sd(x) ^ 3 )  
+ 		}
 
-# without buffer (values at point)
-system.time( {		
- stats <- node.statistics(ralu.site, r = xvars[[-6]],
-             stats = c("min", "median", "max", "var", "skew")) 
-} )
+ # without buffer (values at point)
+ system.time( {		
+  stats <- node.statistics(ralu.site, r = xvars[[-6]]) 
+ } )
 
-# with 1000m buffer (values around points)
-system.time( {		
- stats <- node.statistics(ralu.site, r = xvars[[-6]], buffer = 1000,  
-             stats = c("min", "median", "max", "var", "skew")) 
-} ) 
+ # with 1000m buffer (values around points)
+ system.time( {		
+  stats <- node.statistics(ralu.site, r = xvars[[-6]], buffer = 1000, 
+              stats = c("min", "median", "max", "var", "skew")) 
+ } ) 
+ }
 
-dist.graph@data <- data.frame(dist.graph@data, stats, nstats)
-  str(dist.graph@data)
 }
-
+\author{
+Jeffrey S. Evans  <jeffrey_evans@tnc.org> and 
+        Melanie A. Murphy <melanie.murphy@uwyo.edu>
 }

@@ -9,13 +9,12 @@ knn.graph(
   row.names = NULL,
   k = NULL,
   max.dist = NULL,
-  sym = FALSE,
   long.lat = FALSE,
   drop.lower = FALSE
 )
 }
 \arguments{
-\item{x}{sp SpatialPointsDataFrame object}
+\item{x}{sf POINTS object}
 
 \item{row.names}{Unique row.names assigned to results}
 
@@ -23,12 +22,11 @@ knn.graph(
 
 \item{max.dist}{Maximum length of an edge (used for distance constraint)}
 
-\item{sym}{Create symmetrical graph (FALSE/TRUE)}
-
 \item{long.lat}{(FALSE/TRUE) Coordinates are longitude-latitude decimal degrees,
 in which case distances are measured in kilometers}
 
-\item{drop.lower}{(FALSE/TRUE) Drop lower triangle of matrix (duplicate edges)}
+\item{drop.lower}{(FALSE/TRUE) Drop lower triangle of matrix representing
+duplicate edges ie, from-to and to-from}
 }
 \value{
 SpatialLinesDataFrame object with:
@@ -37,8 +35,7 @@ SpatialLinesDataFrame object with:
 \item j        Name of column in x with TO (destination) index
 \item from_ID  Name of column in x with FROM (origin) region ID
 \item to_ID    Name of column in x with TO (destination) region ID
-\item length   Length of each edge (line) in projection units or kilometers
-if long.lat = TRUE
+\item length   Length of each edge (line) in projection units or kilometers if not projected
 }
 }
 \description{
@@ -48,25 +45,25 @@ Creates a kNN or saturated graph SpatialLinesDataFrame object
 ...
 }
 \examples{
-   library(sp) 
-   data(ralu.site)
+ library(sf)
+   data(ralu.site, package="GeNetIt")
 
  # Saturated spatial graph
- sat.graph <- knn.graph(ralu.site, row.names=ralu.site@data[,"SiteName"])
-   head(sat.graph@data)
+ sat.graph <- knn.graph(ralu.site, row.names=ralu.site$SiteName)
+   head(sat.graph)
  
  # Distanced constrained spatial graph
- dist.graph <- knn.graph(ralu.site, row.names=ralu.site@data[,"SiteName"], 
+ dist.graph <- knn.graph(ralu.site, row.names=ralu.site$SiteName, 
                          max.dist = 5000)
 
 opar <- par(no.readonly=TRUE)
  par(mfrow=c(1,2))	
-plot(sat.graph, col="grey")
-  points(ralu.site, col="red", pch=20, cex=1.5)
+plot(st_geometry(sat.graph), col="grey")
+  points(st_coordinates(ralu.site), col="red", pch=20, cex=1.5)
      box()
      title("Saturated graph")	
-plot(dist.graph, col="grey")
-  points(ralu.site, col="red", pch=20, cex=1.5)
+plot(st_geometry(dist.graph), col="grey")
+  points(st_coordinates(ralu.site), col="red", pch=20, cex=1.5)
      box()
      title("Distance constrained graph")
 par(opar)	  
@@ -81,5 +78,5 @@ high mountain frog metapopulations. Molecular Ecology 19(17):3634-3649
 }
 \author{
 Jeffrey S. Evans  \href{mailto:jeffrey_evans@tnc.org}{jeffrey_evans@tnc.org} and
-Melanie Murphy \href{mailto:melanie.murphy@uwyo.edu}{melanie.murphy@uwyo.edu}
+Melanie A. Murphy \href{mailto:melanie.murphy@uwyo.edu}{melanie.murphy@uwyo.edu}
 }

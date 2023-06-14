@@ -20,14 +20,15 @@
 #' gravity literature as producer (from) and attractor (to). 
 #'
 #' @author Jeffrey S. Evans  <jeffrey_evans@@tnc.org> and 
-#'         Melanie Murphy <melanie.murphy@@uwyo.edu>
+#'         Melanie A. Murphy <melanie.murphy@@uwyo.edu>
 #'
 #' @examples 
 #' data(ralu.site)
 #'
 #' # Build from/to site (node) level data structure 
 #' site.parms = c("AREA_m2", "PERI_m", "Depth_m", "TDS")
-#' site <- build.node.data(ralu.site@data, group.ids = c("SiteName"), 
+#' site <- build.node.data(sf::st_drop_geometry(ralu.site), 
+#'                         group.ids = c("SiteName"), 
 #'                         from.parms = site.parms ) 
 #'  
 #' @export

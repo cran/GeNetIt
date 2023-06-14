@@ -10,7 +10,8 @@
 #' @note Plot types available: 1 - Model structure I, 2 - Model structure II, 3 - Q-Q Normal - Origin random effects, 4 - Q-Q Normal - Residuals , 5 - Fitted values, 6 - Distribution of observed verses predicted		
 #' @note Depends: nlme, lattice
 #'
-#' @author Jeffrey S. Evans  <jeffrey_evans@@tnc.org> and Melanie Murphy <melanie.murphy@@uwyo.edu>
+#' @author Jeffrey S. Evans  <jeffrey_evans@@tnc.org> and 
+#'         Melanie A. Murphy <melanie.murphy@@uwyo.edu>
 #'
 #' @references
 #' Murphy, M. A. & J.S. Evans. (in prep). "GenNetIt: gravity analysis in R for landscape genetics" 
@@ -20,6 +21,7 @@
 #' @method plot gravity 
 #' @export
 plot.gravity <- function(x, type = 1, ...) {
+  options(warn=-1)
   if(type == 1) {
   # MODEL STRUCTURE I  
   	graphics::plot(stats::fitted(x$gravity, level=0), x$y, xlab = "Fitted Values (DPS)",
@@ -53,14 +55,17 @@ plot.gravity <- function(x, type = 1, ...) {
               graphics::abline(h=0, col="darkgreen")  
     }  
   if(type == 6) {
-  # DISTRIBUTION OF OBSERVED VS. PRED		
+  # DISTRIBUTION OF OBSERVED VS.PRED
+    #yname = strsplit(as.character(as.list(x$gravity$call)$fixed), "[~]")[[2]]
     oden <- stats::density(x$y)
     pden <- stats::density(stats::predict(x$gravity)) 
-    graphics::plot(oden, type="n", main="", xlim=c(min(x$y), max(x$y)), 
+    graphics::plot(oden, type="n", main="", 
+	               xlim=c(min(x$y), max(x$y)), 
          ylim=c(min(oden$y,pden$y), max(oden$y,pden$y)))     
             graphics::polygon(oden, col=grDevices::rgb(1,0,0,0.5))
             graphics::polygon(pden, col=grDevices::rgb(0,0,1,0.5))
       graphics::legend("topright", legend=c("Obs","Pred"), 
 	              fill=c(grDevices::rgb(1,0,0,0.4), grDevices::rgb(0,0,1,0.4)))
     }
+  options(warn=0)
 }

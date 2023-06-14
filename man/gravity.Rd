@@ -4,7 +4,17 @@
 \alias{gravity}
 \title{Gravity model}
 \usage{
-gravity(y, x, d, group, data, ln = TRUE, constrained = TRUE, ...)
+gravity(
+  y,
+  x,
+  d,
+  group,
+  data,
+  fit.method = c("REML", "ML"),
+  ln = TRUE,
+  constrained = TRUE,
+  ...
+)
 }
 \arguments{
 \item{y}{Name of dependent variable}
@@ -17,6 +27,8 @@ gravity(y, x, d, group, data, ln = TRUE, constrained = TRUE, ...)
 
 \item{data}{data.frame object containing model data}
 
+\item{fit.method}{Method used to fit model c("REML", "ML")}
+
 \item{ln}{Natural log transform data (TRUE/FALSE)}
 
 \item{constrained}{Specify constrained model, if FALSE a linear model (lm) 
@@ -25,24 +37,36 @@ is run (TRUE/FALSE)}
 \item{...}{Additional argument passed to nlme or lm}
 }
 \value{
-formula           Model formula
+formula           Model formula call
+
+fixed.formula     Model formula for fixed effects
+
+random.formula    Model formula for random (group) effects 
+                          (only for constrained models)
 
 gravity           Gravity model
 
+fit               Model Fitted Values
+
 AIC               AIC value for selected model
+
+RMSE              Root Mean Squared Error (based on bias corrected back transform)
 
 log.likelihood    Restricted log-likelihood at convergence
 
-x                 data.frame of independent variables
+group.names       Column name of grouping variable
 
-y                 Vector of dependent variable
+groups            Values of grouping variable
 
-groups            Ordered factor vector of grouping variable
+x                 data.frame of x variables
 
-fit               Model Fitted Values
+y                 Vector of y variable
+
+constrained       TRUE/FALSE indicating if model is constrained
 }
 \description{
-Implements Murphy et al., (2010) gravity model
+Implements Murphy et al., (2010) gravity model via a 
+             linear mixed effects model
 }
 \details{
 The "group" factor defines the singly constrained direction (from or to) and the 
@@ -59,14 +83,13 @@ Depends: nlme, lattice
 \examples{
 library(nlme)
 data(ralu.model)
-str(ralu.model)
 
 # Gravity model	
 x = c("DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
 ( gm <- gravity(y = "DPS", x = x, d = "DISTANCE", group = "FROM_SITE", 
                 data = ralu.model, ln = FALSE) )
 
-# Plot gravity results
+#' # Plot gravity results
  par(mfrow=c(2,3))
    for (i in 1:6) { plot(gm, type=i) } 
 
@@ -75,8 +98,8 @@ x = c("DEPTH_F", "HLI_F", "CTI_F", "cti", "ffp")
  for(i in x[-1]) {
    x1 = c(x[1], x[-which(x \%in\% i)])  
    ll <- gravity(y = "DPS", x = x1, d = "DISTANCE", group = "FROM_SITE", 
-                data = ralu.model, ln = FALSE)$log.likelihood
-  cat("log likelihood for parameter set:", "(",x1,")", "=", ll, "\n")				 
+                 data = ralu.model, ln = FALSE)$log.likelihood
+  cat("log likelihood for parameter set:", "(",x1,")", "=", ll, "\n") 
  }
 
 # Distance only (IBD) model
@@ -100,5 +123,5 @@ Murphy M.A., R. Dezzani, D.S. Pilliod & A.S. Storfer (2010) Landscape genetics o
 }
 \author{
 Jeffrey S. Evans  <jeffrey_evans@tnc.org> and 
-        Melanie Murphy <melanie.murphy@uwyo.edu>
+        Melanie A. Murphy <melanie.murphy@uwyo.edu>
 }

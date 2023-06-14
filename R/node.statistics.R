@@ -13,67 +13,66 @@
 #'
 #' @note 
 #' If no buffer is specified, at-node raster values are returned 
+#'
+#' @author Jeffrey S. Evans  <jeffrey_evans@@tnc.org> and 
+#'         Melanie A. Murphy <melanie.murphy@@uwyo.edu>
 #'  
 #' @examples
 #' \donttest{
-#' library(sp)
-#' library(spdep)
-#' library(raster)
-#'   data(rasters)
-#'   data(ralu.site)
+#'  library(sf)
+#'  library(terra)  
+#'
+#'  data(ralu.site)
+#'  xvars <- rast(system.file("extdata/covariates.tif", package="GeNetIt"))
+#'    
+#'  skew <- function(x, na.rm = TRUE) {  
+#'            if (na.rm) x <- x[!is.na(x)]
+#'            sum( (x - mean(x)) ^ 3) / ( length(x) * sd(x) ^ 3 )  
+#'  		}
 #' 
-#' xvars <- stack(rasters)
-#'   
-#' skew <- function(x, na.rm = TRUE) {  
-#'           if (na.rm) x <- x[!is.na(x)]
-#'           sum( (x - mean(x)) ^ 3) / ( length(x) * sd(x) ^ 3 )  
-#' 		}
-#'
-#' # without buffer (values at point)
-#' system.time( {		
-#'  stats <- node.statistics(ralu.site, r = xvars[[-6]],
-#'              stats = c("min", "median", "max", "var", "skew")) 
-#' } )
-#'
-#' # with 1000m buffer (values around points)
-#' system.time( {		
-#'  stats <- node.statistics(ralu.site, r = xvars[[-6]], buffer = 1000,  
-#'              stats = c("min", "median", "max", "var", "skew")) 
-#' } ) 
-#'
-#' dist.graph@@data <- data.frame(dist.graph@@data, stats, nstats)
-#'   str(dist.graph@@data)
-#' }
+#'  # without buffer (values at point)
+#'  system.time( {		
+#'   stats <- node.statistics(ralu.site, r = xvars[[-6]]) 
+#'  } )
+#' 
+#'  # with 1000m buffer (values around points)
+#'  system.time( {		
+#'   stats <- node.statistics(ralu.site, r = xvars[[-6]], buffer = 1000, 
+#'               stats = c("min", "median", "max", "var", "skew")) 
+#'  } ) 
+#'  }
 #' 
 #' @export node.statistics
 node.statistics <- function(x, r, buffer = NULL, 
-                            stats = c("min", "median", "max") ) {				
-  if (!any(class(r)[1] == c("RasterLayer", "RasterStack", "RasterBrick"))) 
-      stop("r must be a raster (layer, stack, brick) class object")
-  if (!any(class(x)[1] == c("SpatialPointsDataFrame", "sf"))) 
-      stop("x must be a SpatialPointsDataFrame or sf POINT object")
-  if(class(x)[1] == "sf"){
-    if(attributes(x$geometry)$class[1] != "POINT")
-      stop("x must be a sf sfc_LINE object")
-  }	
-  if(!sp::is.projected(methods::as(x,"Spatial")))
+                            stats = c("min", "median", "max") ) {
+
+  if (!inherits(r, "SpatRaster")) 
+    stop("r must be a terra SpatRaster class object") 
+  if (!inherits(x, "sf")) 
+    stop("x must be a sf POINT object") 
+  if(attributes(x$geometry)$class[1] != "sfc_POINT")
+    stop("x must be a sf sfc_POINT object")   	
+  if(sf::st_is_longlat(x))
     warning("Projection is not defined or in lat/long, is it recommended that you 
-      project your data to prevent planiar distortions")
-  if(inherits(x, "SpatialPointsDataFrame")) {
-    x <- sf::st_as_sf(x)
-  } 	  
+      project your data to prevent planar distortions in the buffer")
+  if(!sf::st_crs(x) == sf::st_crs(terra::crs(r)))
+    warning("x and r projections do not match")	  
+  
+  #### Extract raster values intersecting points or buffers
   if(is.null(buffer)) {
     message("At-node ([x,y] point) values being returned")
-      results <- data.frame(raster::extract(r, x))
-	    names(results) <- names(r) 
-  } else if(!is.null(buffer)) {
-  if(!is.numeric(buffer)) stop("Buffer radius needs to be numeric")  
+    results <- terra::extract(r, terra::vect(x))
+  } else {	
     message(paste0("Using ", buffer, " distance for statistics"))
-	x <- sf::st_buffer(x, dist = buffer) 
-      ldf <- exactextractr::exact_extract(r, x, progress = FALSE)
-        ldf <- lapply(ldf, FUN = function(x) as.data.frame(x[,-which(names(x) %in% "coverage_fraction")]))	
-	      names(ldf) <- row.names(x)
-		  
+	  b <- sf::st_buffer(x, dist = buffer)
+      if(!nrow(b) == nrow(x))
+        stop("Sorry, something went wrong with buffering, features do not match")
+      ldf <- exactextractr::exact_extract(r, b, progress = FALSE)
+	    ldf <- lapply(ldf, FUN = function(x) {
+		  j <- as.data.frame(x[,-which(names(x) %in% "coverage_fraction")])
+		    names(j) <- names(r)
+		  return(j)})
+          names(ldf) <- row.names(x)	 	  
     stats.fun <- function(x, m = stats) {
 	  slist <- list()
         for(i in 1:length(m)) {
@@ -85,7 +84,7 @@ node.statistics <- function(x, r, buffer = NULL,
 	  results <- do.call("rbind", results)
 	    rn <- vector()
 	  for(n in stats) { rn <- append(rn, paste(n, names(r), sep="."))}
-	    names(results) <- rn 
-  }
+    names(results) <- rn 
+  }	
   return( results )
 }

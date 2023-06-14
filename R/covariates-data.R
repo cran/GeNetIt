@@ -1,11 +1,11 @@
-#' @name rasters
+#' @name covariates
 #' @docType data
 #'
 #' @title Subset of raster data for Columbia spotted frog (Rana luteiventris)  
 #'
 #' @description Subset of data used in Murphy et al., (2010)
 #'
-#' @format A raster RasterStack:
+#' @format A 30m LZW compressed tiff:
 #' \describe{
 #' \item{rows}{426}
 #' \item{columns}{358}

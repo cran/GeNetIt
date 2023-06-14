@@ -2,14 +2,14 @@
 % Please edit documentation in R/graph.statistics.R
 \name{graph.statistics}
 \alias{graph.statistics}
-\title{Point sample and statistics for edges (lines)}
+\title{Statistics for edges (lines)}
 \usage{
 graph.statistics(x, r, stats = c("min", "mean", "max"), buffer = NULL)
 }
 \arguments{
 \item{x}{sp SpatialLinesDataFrame or sf LINE object}
 
-\item{r}{A rasterLayer, rasterStack or rasterBrick object}
+\item{r}{A terra SpatRast or raster rasterLayer, rasterStack, rasterBrick object}
 
 \item{stats}{Statistics to calculate. If vectorized, can pass a custom 
 statistic function.}
@@ -21,25 +21,24 @@ based on edge buffer distance}
 data.frame object of statistics
 }
 \description{
-Samples rasters for each edge and calculates specified statistics
+Extracts raster values for each edge and calculates specified statistics
 }
 \note{
-...
+If the buffer argument is specified that, raster values within the specified 
+buffer radius are extracted and included in the derived statistic(s). Else-wise,
+the statistics are derived from raster values that directly intersect each edge.
 }
 \examples{
 \donttest{
- library(sp)
- library(spdep)
- library(raster)
-   data(rasters)
-   data(ralu.site)
+ library(sf)
+ library(terra)  
+
+ data(ralu.site)	
+ xvars <- rast(system.file("extdata/covariates.tif", package="GeNetIt"))
  
- xvars <- stack(rasters)
+  ( dist.graph <- knn.graph(ralu.site, row.names = ralu.site$SiteName, 
+                            max.dist = 1500) )
  
-  dist.graph <- knn.graph(ralu.site, row.names = ralu.site$SiteName, 
-                          max.dist = 1500)
-   str(dist.graph@data)
-   
  skew <- function(x, na.rm = TRUE) {  
            if (na.rm) x <- x[!is.na(x)]
            sum( (x - mean(x)) ^ 3) / ( length(x) * sd(x) ^ 3 )  
@@ -63,11 +62,13 @@ p <- function(x) { length(x[x < 52]) / length(x) }
  system.time( {		
   stats <- graph.statistics(dist.graph, r = xvars[[-6]],  
               stats = c("min", "median", "max", "var", "skew"),
-			  buffer = 500) 
+			      buffer = 500) 
  } )
 
- dist.graph@data <- data.frame(dist.graph@data, stats, nstats)
-   str(dist.graph@data)
 }
 
+}
+\author{
+Jeffrey S. Evans  <jeffrey_evans@tnc.org> and 
+        Melanie A. Murphy <melanie.murphy@uwyo.edu>
 }
